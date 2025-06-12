@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>政党マッチング - 2025参議院選挙向け</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .lucide-icon {
+            width: 1em;
+            height: 1em;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="app" class="max-w-4xl mx-auto p-6 min-h-screen">
+        <!-- タイトル画面 -->
+        <div id="title-screen" class="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 relative">
+            <button id="evaluation-btn" class="absolute top-4 left-4 text-xs text-gray-500 hover:text-gray-700 transition-colors duration-200 underline">
+                評価システムについて
+            </button>
+            
+            <div class="text-center bg-white rounded-2xl p-8 shadow-lg">
+                <svg class="lucide-icon w-20 h-20 mx-auto mb-6 text-blue-600" viewBox="0 0 24 24">
+                    <path d="M2 12h20M6 8l4-4 4 4M6 16l4 4 4-4"/>
+                </svg>
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">政党マッチング</h1>
+                <h2 class="text-xl text-blue-600 mb-8 font-semibold">2025参議院選挙向け</h2>
+                <p class="text-gray-600 mb-8 text-lg">
+                    10の質問に答えて<br>
+                    あなたの考えに近い政党を見つけよう
+                </p>
+                
+                <div class="space-y-4">
+                    <button id="start-quiz-btn" class="w-full bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 text-lg font-semibold">
+                        診断を始める
+                    </button>
+                    
+                    <button id="party-info-btn" class="w-full bg-gray-100 text-gray-700 px-8 py-4 rounded-lg hover:bg-gray-200 transition-colors duration-200 text-lg font-semibold">
+                        政党解説を見る
+                    </button>
+                </div>
+                
+                <div class="mt-6 p-4 bg-yellow-50 rounded-lg text-sm text-gray-600">
+                    <p class="font-semibold mb-1">⚠️ 注意</p>
+                    <p>この診断は参考程度にご利用ください。実際の投票では各政党の政策をよく調べて判断することが大切です。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 質問画面 -->
+        <div id="quiz-screen" class="hidden">
+            <div class="text-center mb-6">
+                <svg class="lucide-icon w-16 h-16 mx-auto mb-4 text-blue-600" viewBox="0 0 24 24">
+                    <path d="M2 12h20M6 8l4-4 4 4M6 16l4 4 4-4"/>
+                </svg>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">政党マッチング</h1>
+                <p class="text-gray-600">あなたの考えに近い政党を見つけてみよう</p>
+            </div>
+
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm text-gray-600">質問 <span id="current-q">1</span> / 10</span>
+                    <span class="text-sm text-gray-600"><span id="progress-text">10</span>%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 10%"></div>
+                </div>
+            </div>
+
+            <div class="bg-white border rounded-lg p-6 shadow-sm mb-6">
+                <div class="mb-4">
+                    <h2 id="question-category" class="text-lg font-semibold text-blue-600 mb-2"></h2>
+                    <p id="question-text" class="text-xl text-gray-800 leading-relaxed"></p>
+                </div>
+
+                <div id="answer-options" class="grid grid-cols-5 gap-3 mb-6">
+                    <!-- 選択肢がここに挿入されます -->
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-blue-800 mb-2 flex items-center">
+                            <span class="mr-2">🌟</span>
+                            「そう思う」を選んだ場合の社会
+                        </h4>
+                        <div id="future-yes" class="text-sm text-blue-700 space-y-2">
+                            <!-- 内容がここに挿入されます -->
+                        </div>
+                    </div>
+
+                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-purple-800 mb-2 flex items-center">
+                            <span class="mr-2">🔄</span>
+                            「そう思わない」を選んだ場合の社会
+                        </h4>
+                        <div id="future-no" class="text-sm text-purple-700 space-y-2">
+                            <!-- 内容がここに挿入されます -->
+                        </div>
+                    </div>
+                </div>
+
+                <div id="back-button-container" class="mt-4 pt-4 border-t hidden">
+                    <button id="back-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors duration-200 text-sm font-medium">
+                        ← 前の質問に戻る
+                    </button>
+                </div>
+            </div>
+
+            <!-- 現在のマッチング状況 -->
+            <div id="current-matching" class="mb-6 hidden">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 text-center">現在のマッチング状況</h3>
+                <div id="matching-results" class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <!-- マッチング結果がここに挿入されます -->
+                </div>
+            </div>
+
+            <div class="text-center text-sm text-gray-500">
+                質問に答えると、あなたの考えに近い政党がわかります
+            </div>
+        </div>
+
+        <!-- 結果画面 -->
+        <div id="results-screen" class="hidden">
+            <div class="text-center mb-8">
+                <svg class="lucide-icon w-16 h-16 mx-auto mb-4 text-blue-600" viewBox="0 0 24 24">
+                    <path d="M2 12h20M6 8l4-4 4 4M6 16l4 4 4-4"/>
+                </svg>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">あなたの結果</h1>
+                <p class="text-gray-600">あなたの考えに近い政党は...</p>
+            </div>
+
+            <div id="final-results" class="space-y-4 mb-8">
+                <!-- 最終結果がここに挿入されます -->
+            </div>
+
+            <div class="text-center">
+                <button id="restart-btn" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center mx-auto mb-4">
+                    <svg class="lucide-icon w-4 h-4 mr-2" viewBox="0 0 24 24">
+                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                        <path d="M21 3v5h-5"/>
+                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                        <path d="M3 21v-5h5"/>
+                    </svg>
+                    もう一度やってみる
+                </button>
+                <button id="back-to-title-results" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors duration-200">
+                    タイトルに戻る
+                </button>
+            </div>
+
+            <div class="mt-8 p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
+                <p class="font-semibold mb-2">📝 大切なお知らせ</p>
+                <p>この結果は参考程度に見てください。実際に投票する時は、各政党がどんなことを約束しているかをよく調べて決めることが大切です。</p>
+            </div>
+
+            <div class="text-right mt-4">
+                <p class="text-xs text-gray-400">情報通信技術活用論2025</p>
+            </div>
+        </div>
+
+        <!-- 政党解説画面 -->
+        <div id="party-info-screen" class="hidden">
+            <div class="text-center mb-8">
+                <svg class="lucide-icon w-16 h-16 mx-auto mb-4 text-blue-600" viewBox="0 0 24 24">
+                    <path d="M2 12h20M6 8l4-4 4 4M6 16l4 4 4-4"/>
+                </svg>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">政党解説</h1>
+                <p class="text-gray-600">主要政党の特徴と党首</p>
+                <div class="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
+                    <p>💡 青色は各政党の主要政策です</p>
+                </div>
+            </div>
+
+            <div id="party-list" class="space-y-6 mb-8">
+                <!-- 政党リストがここに挿入されます -->
+            </div>
+
+            <div class="text-center">
+                <button id="back-to-title-party" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors duration-200 mr-4">
+                    タイトルに戻る
+                </button>
+                <button id="start-quiz-from-party" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                    診断を始める
+                </button>
+            </div>
+        </div>
+
+        <!-- 評価システム解説画面 -->
+        <div id="evaluation-screen" class="hidden">
+            <div class="text-center mb-8">
+                <svg class="lucide-icon w-16 h-16 mx-auto mb-4 text-blue-600" viewBox="0 0 24 24">
+                    <path d="M2 12h20M6 8l4-4 4 4M6 16l4 4 4-4"/>
+                </svg>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">評価システムについて</h1>
+                <p class="text-gray-600">このマッチング診断の仕組みを説明します</p>
+            </div>
+
+            <div class="space-y-6 mb-8">
+                <div class="bg-white border rounded-lg p-6 shadow-sm">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">🧮 マッチング度の計算方法</h3>
+                    <div class="space-y-3 text-gray-700">
+                        <p>あなたの回答と各政党の立場を5段階（1〜5）で比較し、差が小さいほど高い一致率となります。</p>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="font-semibold mb-2">計算例：</p>
+                            <p>• あなたの回答：4（まあそう思う）</p>
+                            <p>• A政党の立場：4 → 差：0 → 高い一致</p>
+                            <p>• B政党の立場：1 → 差：3 → 低い一致</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white border rounded-lg p-6 shadow-sm">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">⚠️ 注意事項</h3>
+                    <div class="text-gray-700 space-y-2">
+                        <p>• この診断は参考程度にご利用ください</p>
+                        <p>• 政党の立場は簡略化されており、実際の政策は複雑です</p>
+                        <p>• 投票前には各政党の詳細な政策をご確認ください</p>
+                        <p>• 結果が同じでも、重視する政策分野が異なる場合があります</p>
+                        <p>• 政策は2024年の衆議院議員選挙時のものが含まれており、参議院選挙が近づくにつれて変わる可能性があります</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button id="back-to-title-eval" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors duration-200 mr-4">
+                    タイトルに戻る
+                </button>
+                <button id="start-quiz-from-eval" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                    診断を始める
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // データ定義
+        const questions = [
+            {
+                id: 'economy',
+                question: 'お金の使い道について',
+                text: '国がもっと積極的に経済に関わった方がいいと思いますか？',
+                options: [
+                    { value: 5, text: 'そう思う' },
+                    { value: 4, text: 'まあそう思う' },
+                    { value: 3, text: 'どちらでもない' },
+                    { value: 2, text: 'あまり思わない' },
+                    { value: 1, text: 'そう思わない' }
+                ],
+                futureYes: [
+                    '不況の時は国がすぐに支援策を出し、失業率が低く保たれる社会',
+                    '大企業と中小企業の差が小さく、地方でも安定した雇用がある社会',
+                    '重要な技術や産業が海外に流出せず、国内で発展し続ける社会'
+                ],
+                futureNo: [
+                    '市場が自由に動き、競争によって革新的な商品やサービスが生まれる社会',
+                    '税負担が軽く、個人や企業が自由にお金を使える社会',
+                    '小さな政府で、民間の活力によって経済が成長する社会'
+                ]
+            },
+            {
+                id: 'social_security',
+                question: '医療や年金について',
+                text: '医療費や年金を充実させるために税金が上がってもいいと思いますか？',
+                options: [
+                    { value: 5, text: 'そう思う' },
+                    { value: 4, text: 'まあそう思う' },
+                    { value: 3, text: 'どちらでもない' },
+                    { value: 2, text: 'あまり思わない' },
+                    { value: 1, text: 'そう思わない' }
+                ],
+                futureYes: [
+                    '誰もが病気になっても経済的な心配なく治療を受けられる社会',
+                    '高齢者が安心して暮らせ、介護サービスが充実している社会',
+                    '若い世代も将来への不安なく、安定した老後を期待できる社会'
+                ],
+                futureNo: [
+                    '働く世代の手取りが多く、自分で老後資金を準備する社会',
+                    '民間の保険や貯蓄が発達し、多様な老後プランを選べる社会',
+                    '税負担が軽く、経済成長によってみんなの収入が増える社会'
+                ]
+            },
+            {
+                id: 'constitution',
+                question: '憲法について',
+                text: '今の憲法を変えた方がいいと思いますか？',
+                options: [
+                    { value: 5, text: 'そう思う' },
+                    { value: 4, text: 'まあそう思う' },
+                    { value: 3, text: 'どちらでもない' },
+                    { value: 2, text: 'あまり思わない' },
+                    { value: 1, text: 'そう思わない' }
+                ],
+                futureYes: [
+                    '時代の変化に合わせて、新しい権利や制度が憲法に明記される社会',
+                    '災害対応や環境保護など、現代の課題に対応できる法的基盤がある社会',
+                    '国民の意見が反映された、より民主的な憲法を持つ社会'
+                ],
+                futureNo: [
+                    '戦後70年以上守り続けた平和憲法の理念が継続される社会',
+                    '政治的な混乱なく、安定した法制度のもとで暮らせる社会',
+                    '憲法改正による権力の集中を避け、民主主義が守られる社会'
+                ]
+            },
+            {
+                id: 'defense',
+                question: '国の守りについて',
+                text: '自衛隊や防衛にもっとお金をかけた方がいいと思いますか？',
+                options: [
+                    { value: 5, text: 'そう思う' },
+                    { value: 4, text: 'まあそう思う' },
+                    { value: 3, text: 'どちらでもない' },
+                    { value: 2, text: 'あまり思わない' },
+                    { value: 1, text: 'そう思わない' }
+                ],
+                futureYes: [
+                    '外国からの脅威に対して、しっかりと国を守れる能力がある社会',
+                    '災害時に迅速で大規模な救助活動ができる、頼りになる自衛隊がある社会',
+                    '同盟国との信頼関係が深く、国際的な発言力がある社会'
+                ],
+                futureNo: [
+                    '教育や医療、社会保障により多くの予算が使われる社会',
+                    '軍事的緊張が高まらず、近隣国との平和的関係を維持する社会',
+                    '武力ではなく外交による問題解決を重視する、平和な社会'
+                ]
+            },
+            {
+                id: 'environment',
+                question: '環境と経済について',
+                text: '経済の発展よりも環境を守ることの方が大切だと思いますか？',
+                options: [
+                    { value: 5, text: 'そう思う' },
+                    { value: 4, text: 'まあそう思う' },
+                    { value: 3, text: 'どちらでもない' },
+                    { value: 2, text: 'あまり思わない' },
+                    { value: 1, text: 'そう思わない' }
+                ],
+                futureYes: [
+                    '再生可能エネルギーが主流となり、美しい自然が保たれる社会',
+                    '子どもたちが清潔な空気と水のある環境で成長できる社会',
+                    '環境技術が発達し、持続可能な暮らしが当たり前になった社会'
+                ],
+                futureNo: [
+                    '経済成長が優先され、雇用機会が豊富で所得水準が高い社会',
+                    '技術革新により環境負荷を抑えながら、便利で豊かな生活ができる社会',
+                    '企業の自由な活動によって、新しい製品やサービスが次々生まれる社会'
+                ]
+            },
+            {
+                id: 'immigration',
+                question: '外国の人について',
+                text: '外国から働きに来る人をもっと受け入れた方がいいと思いますか？',
+                options: [
+                    { value: 5, text: 'そう思う' },
+                    { value: 4, text: 'まあそう思う' },
+                    { value: 3, text: 'どちらでもない' },
+                    { value: 2, text: 'あまり思わない' },
+                    { value: 1, text: 'そう思わない' }
+                ],
+                futureYes: [
+                    '労働力不足が解消され、介護や農業などの現場に活気が戻る社会',
+                    '多様な文化が混じり合い、国際的で豊かな文化を持つ社会',
+                    '経済が活性化し、イノベーションや起業が盛んになる社会'
+                ],
+                futureNo: [
+                    '日本人の雇用が守られ、賃金水準が維持される社会',
+                    '日本の伝統的な文化や価値観が大切に保たれる社会',
+                    '社会保障制度への負担が適正に保たれ、持続可能な制度がある社会'
+                ]
+            },
+            {
+                id: 'nuclear',
+                question: '原子力発電について',
+                text: '原子力発電を少しずつやめていった方がいいと思いますか？',
+                options: [
+                    { value: 5, text: 'そう思う' },
+                    { value: 4, text: 'まあそう思う' },
+                    { value: 3, text: 'どちらでもない' },
+                    { value: 2, text: 'あまり思わない' },
+                    { value: 1, text: 'そう思わない' }
+                ],
+                futureYes: [
+                    '原発事故の心配がなく、安全で安心な暮らしができる社会',
+                    '太陽光や風力など、クリーンなエネルギーが主力となった社会',
+                    '放射性廃棄物の処理問題が解決し、環境への負担が軽減された社会'
+                ],
+                futureNo: [
+                    '安定した電力供給により、産業が発達し雇用が確保される社会',
+                    '電気料金が安く、家計の負担が軽い社会',
+                    '原子力技術を活用してCO2排出量を抑え、温暖化対策ができる社会'
+                ]
+            },
+            {
+                id: 'lgbtq',
+                question: '多様な家族について',
+                text: '男性同士や女性同士の結婚も法律で認めた方がいいと思いますか？',
+                options: [
+                    { value: 5, text: 'そう思う' },
+                    { value: 4, text: 'まあそう思う' },
+                    { value: 3, text: 'どちらでもない' },
+                    { value: 2, text: 'あまり思わない' },
+                    { value: 1, text: 'そう思わない' }
+                ],
+                futureYes: [
+                    'すべての人が愛する人と平等に家族を築ける、差別のない社会',
+                    'LGBTQ+の人たちが隠れることなく、自分らしく生きられる社会',
+                    '多様性を認め合い、お互いを尊重する心豊かな社会'
+                ],
+                futureNo: [
+                    '伝統的な家族観を大切にしながら、安定した社会制度が維持される社会',
+                    '急激な制度変更による混乱がなく、段階的に理解が深まる社会',
+                    '宗教的・文化的価値観を尊重しながら、共存できる社会'
+                ]
+            },
+            {
+                id: 'political_satisfaction',
+                question: '今の政治について',
+                text: '今の政治に満足していますか？',
+                options: [
+                    { value: 5, text: 'そう思う' },
+                    { value: 4, text: 'まあそう思う' },
+                    { value: 3, text: 'どちらでもない' },
+                    { value: 2, text: 'あまり思わない' },
+                    { value: 1, text: 'そう思わない' }
+                ],
+                futureYes: [
+                    '現在の政策が継続され、安定した政治運営が続く社会',
+                    '与党の経験と実績を活かした、着実な改革が進む社会',
+                    '急激な変化を避け、段階的な改善によって発展する社会'
+                ],
+                futureNo: [
+                    '新しいリーダーシップの下で、政治が大きく変わる社会',
+                    '野党の新しいアイデアや政策が実現される社会',
+                    '政治のやり方を根本から見直し、改革が進む社会'
+                ]
+            },
+            {
+                id: 'separate_surnames',
+                question: '夫婦の名字について',
+                text: '結婚しても夫婦が別々の名字を選べるようにした方がいいと思いますか？',
+                options: [
+                    { value: 5, text: 'そう思う' },
+                    { value: 4, text: 'まあそう思う' },
+                    { value: 3, text: 'どちらでもない' },
+                    { value: 2, text: 'あまり思わない' },
+                    { value: 1, text: 'そう思わない' }
+                ],
+                futureYes: [
+                    '女性が結婚後も仕事で築いたキャリアや実績を継続しやすい社会',
+                    '夫婦それぞれの家族のつながりや伝統を大切にできる社会',
+                    '多様な家族のあり方を認め、個人の選択を尊重する社会'
+                ],
+                futureNo: [
+                    '夫婦が同じ名字を持つことで、家族の絆が深まる社会',
+                    '日本の伝統的な家族制度が大切に守られる社会',
+                    '子どもにとってわかりやすく、安定した家族関係がある社会'
+                ]
+            }
+        ];
+
+        const parties = {
+            '自由民主党': {
+                name: '自由民主党',
+                leader: '石破茂',
+                color: 'bg-red-500',
+                positions: {
+                    economy: 3,
+                    social_security: 3,
+                    constitution: 4,
+                    defense: 4,
+                    environment: 2,
+                    immigration: 3,
+                    nuclear: 2,
+                    lgbtq: 2,
+                    political_satisfaction: 5,
+                    separate_surnames: 3
+                },
+                description: '日本で一番古くて大きな政党。経済を発展させて国を強くしたい'
+            },
+            '公明党': {
+                name: '公明党',
+                leader: '斉藤鉄夫',
+                color: 'bg-yellow-500',
+                positions: {
+                    economy: 3,
+                    social_security: 4,
+                    constitution: 2,
+                    defense: 3,
+                    environment: 3,
+                    immigration: 3,
+                    nuclear: 3,
+                    lgbtq: 3,
+                    political_satisfaction: 5,
+                    separate_surnames: 5
+                },
+                description: '平和と生活を守りたい。自民党と一緒に政治をしている'
+            },
+            '立憲民主党': {
+                name: '立憲民主党',
+                leader: '野田佳彦',
+                color: 'bg-blue-500',
+                positions: {
+                    economy: 4,
+                    social_security: 4,
+                    constitution: 2,
+                    defense: 2,
+                    environment: 4,
+                    immigration: 4,
+                    nuclear: 4,
+                    lgbtq: 4,
+                    political_satisfaction: 1,
+                    separate_surnames: 4
+                },
+                description: '普通の人の生活をもっと良くしたい。環境や多様性を大切にする'
+            },
+            '日本共産党': {
+                name: '日本共産党',
+                leader: '田村智子',
+                color: 'bg-red-700',
+                positions: {
+                    economy: 5,
+                    social_security: 5,
+                    constitution: 1,
+                    defense: 1,
+                    environment: 5,
+                    immigration: 4,
+                    nuclear: 5,
+                    lgbtq: 5,
+                    political_satisfaction: 1,
+                    separate_surnames: 5
+                },
+                description: '戦争反対。お金持ちと普通の人の格差をなくしたい'
+            },
+            '日本維新の会': {
+                name: '日本維新の会',
+                leader: '吉村洋文',
+                color: 'bg-orange-500',
+                positions: {
+                    economy: 2,
+                    social_security: 2,
+                    constitution: 4,
+                    defense: 4,
+                    environment: 3,
+                    immigration: 3,
+                    nuclear: 3,
+                    lgbtq: 3,
+                    political_satisfaction: 2,
+                    separate_surnames: 3
+                },
+                description: '古いやり方を変えて新しい日本にしたい。大阪から始まった'
+            },
+            'れいわ新選組': {
+                name: 'れいわ新選組',
+                leader: '山本太郎',
+                color: 'bg-pink-500',
+                positions: {
+                    economy: 5,
+                    social_security: 5,
+                    constitution: 2,
+                    defense: 1,
+                    environment: 4,
+                    immigration: 4,
+                    nuclear: 5,
+                    lgbtq: 5,
+                    political_satisfaction: 1,
+                    separate_surnames: 5
+                },
+                description: '困っている人を助けたい。お金の使い道を変えたい'
+            },
+            '国民民主党': {
+                name: '国民民主党',
+                leader: '玉木雄一郎',
+                color: 'bg-green-500',
+                positions: {
+                    economy: 3,
+                    social_security: 4,
+                    constitution: 3,
+                    defense: 3,
+                    environment: 3,
+                    immigration: 3,
+                    nuclear: 2,
+                    lgbtq: 4,
+                    political_satisfaction: 2,
+                    separate_surnames: 4
+                },
+                description: '働く人を第一に考える。現実的な政治をしたい'
+            },
+            '参政党': {
+                name: '参政党',
+                leader: '神谷宗幣',
+                color: 'bg-purple-500',
+                positions: {
+                    economy: 2,
+                    social_security: 3,
+                    constitution: 4,
+                    defense: 4,
+                    environment: 2,
+                    immigration: 2,
+                    nuclear: 2,
+                    lgbtq: 2,
+                    political_satisfaction: 2,
+                    separate_surnames: 2
+                },
+                description: '日本の伝統や文化を大切にしたい。新しくできた政党'
+            }
+        };
+
+        // アプリケーションの状態
+        let currentQuestion = 0;
+        let answers = {};
+        let currentScreen = 'title';
+
+        // DOM要素の取得
+        const screens = {
+            title: document.getElementById('title-screen'),
+            quiz: document.getElementById('quiz-screen'),
+            results: document.getElementById('results-screen'),
+            partyInfo: document.getElementById('party-info-screen'),
+            evaluation: document.getElementById('evaluation-screen')
+        };
+
+        // 画面切り替え関数
+        function showScreen(screenName) {
+            Object.values(screens).forEach(screen => screen.classList.add('hidden'));
+            screens[screenName].classList.remove('hidden');
+            currentScreen = screenName;
+        }
+
+        // 質問を表示する関数
+        function displayQuestion() {
+            const question = questions[currentQuestion];
+            
+            document.getElementById('current-q').textContent = currentQuestion + 1;
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progress-text').textContent = Math.round(progress);
+            document.getElementById('progress-bar').style.width = progress + '%';
+            
+            document.getElementById('question-category').textContent = question.question;
+            document.getElementById('question-text').textContent = question.text;
+            
+            // 選択肢を表示
+            const optionsContainer = document.getElementById('answer-options');
+            optionsContainer.innerHTML = '';
+            question.options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'aspect-square flex flex-col items-center justify-center p-4 border rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors duration-200 group';
+                button.innerHTML = `
+                    <div class="text-2xl font-bold text-blue-600 mb-2 group-hover:text-blue-700">
+                        ${option.value}
+                    </div>
+                    <span class="text-xs text-gray-700 text-center leading-tight">
+                        ${option.text}
+                    </span>
+                `;
+                button.onclick = () => handleAnswer(option.value);
+                optionsContainer.appendChild(button);
+            });
+            
+            // 未来のシナリオを表示
+            const futureYesContainer = document.getElementById('future-yes');
+            futureYesContainer.innerHTML = '';
+            question.futureYes.forEach(scenario => {
+                const div = document.createElement('div');
+                div.className = 'bg-white bg-opacity-50 p-2 rounded';
+                div.textContent = scenario;
+                futureYesContainer.appendChild(div);
+            });
+            
+            const futureNoContainer = document.getElementById('future-no');
+            futureNoContainer.innerHTML = '';
+            question.futureNo.forEach(scenario => {
+                const div = document.createElement('div');
+                div.className = 'bg-white bg-opacity-50 p-2 rounded';
+                div.textContent = scenario;
+                futureNoContainer.appendChild(div);
+            });
+            
+            // 戻るボタンの表示/非表示
+            const backButtonContainer = document.getElementById('back-button-container');
+            if (currentQuestion > 0) {
+                backButtonContainer.classList.remove('hidden');
+            } else {
+                backButtonContainer.classList.add('hidden');
+            }
+            
+            // 現在のマッチング結果を更新
+            if (Object.keys(answers).length > 0) {
+                updateCurrentMatching();
+                document.getElementById('current-matching').classList.remove('hidden');
+            } else {
+                document.getElementById('current-matching').classList.add('hidden');
+            }
+        }
+
+        // 回答を処理する関数
+        function handleAnswer(value) {
+            answers[questions[currentQuestion].id] = value;
+            
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                displayQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        // 前の質問に戻る関数
+        function goBackToPreviousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                delete answers[questions[currentQuestion].id];
+                displayQuestion();
+            }
+        }
+
+        // マッチング度を計算する関数
+        function calculateMatches() {
+            const matches = {};
+            
+            Object.keys(parties).forEach(partyName => {
+                const party = parties[partyName];
+                let totalDifference = 0;
+                let questionCount = 0;
+
+                Object.keys(answers).forEach(questionId => {
+                    if (party.positions[questionId] !== undefined) {
+                        const difference = Math.abs(answers[questionId] - party.positions[questionId]);
+                        totalDifference += difference;
+                        questionCount++;
+                    }
+                });
+
+                const averageDifference = totalDifference / questionCount;
+                const matchPercentage = Math.max(0, 100 - (averageDifference * 25));
+                matches[partyName] = Math.round(matchPercentage);
+            });
+
+            return Object.entries(matches)
+                .sort(([,a], [,b]) => b - a)
+                .map(([name, percentage]) => ({ name, percentage, party: parties[name] }));
+        }
+
+        // 現在のマッチング状況を更新する関数
+        function updateCurrentMatching() {
+            const results = calculateMatches();
+            const container = document.getElementById('matching-results');
+            container.innerHTML = '';
+            
+            results.forEach((result, index) => {
+                const div = document.createElement('div');
+                div.className = 'bg-gray-50 border rounded-lg p-3 text-center';
+                div.innerHTML = `
+                    <div class="flex items-center justify-center mb-2">
+                        <div class="w-3 h-3 rounded-full ${result.party.color} mr-2"></div>
+                        <span class="text-sm font-medium text-gray-800">
+                            ${index === 0 ? '🏆' : ''}
+                            ${result.name.replace('日本', '')}
+                        </span>
+                    </div>
+                    <div class="text-lg font-bold text-blue-600">
+                        ${result.percentage}%
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-1 mt-2">
+                        <div class="h-1 rounded-full ${result.party.color}" style="width: ${result.percentage}%"></div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // 結果画面を表示する関数
+        function showResults() {
+            const results = calculateMatches();
+            const container = document.getElementById('final-results');
+            container.innerHTML = '';
+            
+            results.forEach((result, index) => {
+                const div = document.createElement('div');
+                div.className = 'bg-white border rounded-lg p-6 shadow-sm';
+                div.innerHTML = `
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 rounded-full ${result.party.color} mr-3"></div>
+                            <h3 class="text-xl font-semibold text-gray-800">
+                                ${index === 0 ? '🏆 ' : ''}${result.name}
+                            </h3>
+                        </div>
+                        <div class="text-2xl font-bold text-blue-600">
+                            ${result.percentage}%
+                        </div>
+                    </div>
+                    
+                    <div class="w-full bg-gray-200 rounded-full h-3 mb-3">
+                        <div class="h-3 rounded-full ${result.party.color}" style="width: ${result.percentage}%"></div>
+                    </div>
+                    
+                    <div class="text-gray-600 text-sm">
+                        <p class="mb-1">党首：${result.party.leader}</p>
+                        <p>${result.party.description}</p>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            
+            showScreen('results');
+        }
+
+        // 政党解説を表示する関数
+        function showPartyInfo() {
+            const container = document.getElementById('party-list');
+            container.innerHTML = '';
+            
+            Object.values(parties).forEach(party => {
+                const div = document.createElement('div');
+                div.className = 'bg-white border rounded-lg p-6 shadow-sm';
+                
+                const isHighlighted = (partyName, policyType, value) => {
+                    const highlights = {
+                        '公明党': ['social_security', 'separate_surnames'],
+                        '立憲民主党': ['social_security', 'separate_surnames'],
+                        '国民民主党': ['social_security', 'separate_surnames'],
+                        'れいわ新選組': ['economy'],
+                        '自由民主党': ['constitution'],
+                        '日本維新の会': ['constitution'],
+                        '参政党': ['constitution'],
+                        '日本共産党': ['separate_surnames']
+                    };
+                    return highlights[partyName] && highlights[partyName].includes(policyType);
+                };
+                
+                div.innerHTML = `
+                    <div class="flex items-center mb-4">
+                        <div class="w-6 h-6 rounded-full ${party.color} mr-4"></div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800">${party.name}</h3>
+                            <p class="text-lg text-gray-600">党首：${party.leader}</p>
+                        </div>
+                    </div>
+                    
+                    <p class="text-gray-700 text-lg mb-4">${party.description}</p>
+                    
+                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                        <div class="${isHighlighted(party.name, 'economy', party.positions.economy) ? 'bg-blue-100 border border-blue-300' : 'bg-gray-50'} p-3 rounded">
+                            <div class="font-semibold text-gray-700">経済</div>
+                            <div class="text-gray-600">
+                                ${party.positions.economy >= 4 ? '国が積極的に関与' : 
+                                  party.positions.economy <= 2 ? '民間中心・自由市場' : '中間的'}
+                            </div>
+                        </div>
+                        <div class="${isHighlighted(party.name, 'social_security', party.positions.social_security) ? 'bg-blue-100 border border-blue-300' : 'bg-gray-50'} p-3 rounded">
+                            <div class="font-semibold text-gray-700">社会保障</div>
+                            <div class="text-gray-600">
+                                ${party.positions.social_security >= 4 ? '充実させたい' : 
+                                  party.positions.social_security <= 2 ? '効率化重視' : '現状維持'}
+                            </div>
+                        </div>
+                        <div class="${isHighlighted(party.name, 'constitution', party.positions.constitution) ? 'bg-blue-100 border border-blue-300' : 'bg-gray-50'} p-3 rounded">
+                            <div class="font-semibold text-gray-700">憲法</div>
+                            <div class="text-gray-600">
+                                ${party.positions.constitution >= 4 ? '変えたい' : 
+                                  party.positions.constitution <= 2 ? '変えたくない' : '慎重派'}
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded">
+                            <div class="font-semibold text-gray-700">防衛</div>
+                            <div class="text-gray-600">
+                                ${party.positions.defense >= 4 ? '強化したい' : 
+                                  party.positions.defense <= 2 ? '平和重視' : '現状維持'}
+                            </div>
+                        </div>
+                        <div class="${isHighlighted(party.name, 'separate_surnames', party.positions.separate_surnames) ? 'bg-blue-100 border border-blue-300' : 'bg-gray-50'} p-3 rounded">
+                            <div class="font-semibold text-gray-700">選択的夫婦別姓</div>
+                            <div class="text-gray-600">
+                                ${party.positions.separate_surnames >= 4 ? '賛成' : 
+                                  party.positions.separate_surnames <= 2 ? '反対・慎重' : '中立・検討'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            
+            showScreen('partyInfo');
+        }
+
+        // リセット関数
+        function resetQuiz() {
+            currentQuestion = 0;
+            answers = {};
+            showScreen('title');
+        }
+
+        // クイズ開始関数
+        function startQuiz() {
+            currentQuestion = 0;
+            answers = {};
+            displayQuestion();
+            showScreen('quiz');
+        }
+
+        // イベントリスナーの設定
+        document.addEventListener('DOMContentLoaded', function() {
+            // タイトル画面のボタン
+            document.getElementById('start-quiz-btn').addEventListener('click', startQuiz);
+            document.getElementById('party-info-btn').addEventListener('click', showPartyInfo);
+            document.getElementById('evaluation-btn').addEventListener('click', () => showScreen('evaluation'));
+            
+            // 政党解説画面のボタン
+            document.getElementById('back-to-title-party').addEventListener('click', () => showScreen('title'));
+            document.getElementById('start-quiz-from-party').addEventListener('click', startQuiz);
+            
+            // 評価システム解説画面のボタン
+            document.getElementById('back-to-title-eval').addEventListener('click', () => showScreen('title'));
+            document.getElementById('start-quiz-from-eval').addEventListener('click', startQuiz);
+            
+            // クイズ画面のボタン
+            document.getElementById('back-btn').addEventListener('click', goBackToPreviousQuestion);
+            
+            // 結果画面のボタン
+            document.getElementById('restart-btn').addEventListener('click', resetQuiz);
+            document.getElementById('back-to-title-results').addEventListener('click', () => showScreen('title'));
+        });
+    </script>
+</body>
+</html>
